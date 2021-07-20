@@ -117,12 +117,14 @@ void pcm_final()
 
 void pcm_play(const unsigned char *data, int length)
 {
-  // Temporarily turn off interrups while writing to variables used in ISR
-  noInterrupts();
+  byte sregRestore = SREG;
+
+  // Temporarily turn off interrups while writing to global variables used in ISR
+  cli(); // clear the global interrupt enable flag
   sounddata_data = data;
   sounddata_length = length;
   sample = 0;
-  interrupts();
+  SREG = sregRestore; // restore the status register to its previous value
 
   // Wait for the amount of time it takes to play sound, times 8/7 to be safe
   delay(length / 7); // Try delay(length / 8) if you feel bold
