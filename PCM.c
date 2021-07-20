@@ -45,9 +45,9 @@
 #endif
 
 int speakerPin = 11;
-unsigned char const *sounddata_data=0;
-int sounddata_length=0;
-volatile uint16_t sample;
+unsigned char const *sounddata_data = 0;
+int sounddata_length = 0;
+volatile uint16_t sample; // Operations on 2-byte variable are not atomic, so volatile might not work
 
 // This is called at 8000 Hz to load the next sample.
 ISR(TIMER1_COMPA_vect)
@@ -115,11 +115,15 @@ void pcm_final()
   digitalWrite(speakerPin, LOW);
 }
 
-void pcm_play(unsigned char const *data, int length)
+void pcm_play(const unsigned char *data, int length)
 {
+  // Temporarily turn off interrups while writing to variables used in ISR
+  noInterrupts();
   sounddata_data = data;
   sounddata_length = length;
   sample = 0;
+  interrupts();
+
   // Wait for the amount of time it takes to play sound, times 8/7 to be safe
   delay(length / 7); // Try delay(length / 8) if you feel bold
 }
