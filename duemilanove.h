@@ -1,4 +1,9 @@
-const unsigned char sample[] PROGMEM = { 126, 127, 128, 128, 128, 128, 
+/* duemilanove sound made by wav2h */
+
+const int duemilanove_sampleRate=8000;
+const int duemilanove_length=18998;
+
+const unsigned char duemilanove_data[] PROGMEM = { 126, 127, 128, 128, 128, 128, 
 128, 127, 128, 128, 128, 129, 129, 128, 127, 128, 128, 127, 126, 127, 128, 
 129, 128, 127, 126, 127, 128, 128, 126, 126, 127, 127, 127, 127, 127, 127, 
 126, 127, 129, 130, 129, 128, 126, 126, 126, 126, 127, 129, 130, 129, 127, 
