@@ -35,21 +35,16 @@
 #include <avr/interrupt.h>
 #include <avr/io.h>
 #include <avr/pgmspace.h>
+#include <util/delay.h>
 
 #define SAMPLE_RATE 8000
+/* #define _BV(bit) (1 << (bit)) */
 
-#if defined(ARDUINO) && ARDUINO >= 100
-#include "Arduino.h"
-#else
-#include "WProgram.h"
-#endif
-
-int speakerPin = 11;
 unsigned char const *sounddata_data = 0;
 int sounddata_length = 0;
-volatile uint16_t sample; // Operations on 2-byte variable are not atomic, so volatile might not work
+volatile uint16_t sample; /* Operations on 2-byte variable are not atomic, so volatile might not suffice */
 
-// This is called at 8000 Hz to load the next sample.
+/* This is called at 8000 Hz to load the next sample */
 ISR(TIMER1_COMPA_vect)
 {
   if (sample < sounddata_length)
@@ -58,44 +53,46 @@ ISR(TIMER1_COMPA_vect)
 
 void pcm_init()
 {
+  /* pinMode(11, OUTPUT); */
+  /* Set the 3rd bit of DDRB to one to make digital pin 11 (PB3 on Atmega328p) an output pin */
+  DDRB |= _BV(PB3);
+
   sample = 0;
 
-  pinMode(speakerPin, OUTPUT);
+  /* Set up Timer 2 to do pulse width modulation on the speaker pin */
 
-  // Set up Timer 2 to do pulse width modulation on the speaker pin.
-  
-  // Use internal clock (datasheet p.160)
+  /* Use internal clock (datasheet p.160) */
   ASSR &= ~(_BV(EXCLK) | _BV(AS2));
-  
-  // Set fast PWM mode  (p.157)
+
+  /* Set fast PWM mode  (p.157) */
   TCCR2A |= _BV(WGM21) | _BV(WGM20);
   TCCR2B &= ~_BV(WGM22);
-  
-  // Do non-inverting PWM on pin OC2A (p.155)
-  // On the Arduino this is pin 11.
+
+  /* Do non-inverting PWM on pin OC2A (p.155)
+     On the Arduino this is pin 11 */
   TCCR2A = (TCCR2A | _BV(COM2A1)) & ~_BV(COM2A0);
   TCCR2A &= ~(_BV(COM2B1) | _BV(COM2B0));
-  
-  // No prescaler (p.158)
+
+  /* No prescaler (p.158) */
   TCCR2B = (TCCR2B & ~(_BV(CS12) | _BV(CS11))) | _BV(CS10);
-  
-  // Set up Timer 1 to send a sample every interrupt.  
+
+  /* Set up Timer 1 to send a sample every interrupt */
   cli();
-  
-  // Set CTC mode (Clear Timer on Compare Match) (p.133)
-  // Have to set OCR1A *after*, otherwise it gets reset to 0!
+
+  /* Set CTC mode (Clear Timer on Compare Match) (p.133)
+     Have to set OCR1A *after*, otherwise it gets reset to 0! */
   TCCR1B = (TCCR1B & ~_BV(WGM13)) | _BV(WGM12);
   TCCR1A = TCCR1A & ~(_BV(WGM11) | _BV(WGM10));
-  
-  // No prescaler (p.134)
+
+  /* No prescaler (p.134) */
   TCCR1B = (TCCR1B & ~(_BV(CS12) | _BV(CS11))) | _BV(CS10);
-  
-  // Set the compare register (OCR1A).
-  // OCR1A is a 16-bit register, so we have to do this with
-  // interrupts disabled to be safe.
-  OCR1A = F_CPU / SAMPLE_RATE;    // 16e6 / 8000 = 2000
-  
-  // Enable interrupt when TCNT1 == OCR1A (p.136)
+
+  /* Set the compare register (OCR1A).
+     OCR1A is a 16-bit register, so we have to do this with
+     interrupts disabled to be safe. */
+  OCR1A = F_CPU / SAMPLE_RATE; /* 16e6 / 8000 = 2000 */
+
+  /* Enable interrupt when TCNT1 == OCR1A (p.136) */
   TIMSK1 |= _BV(OCIE1A);
 
   sei();
@@ -103,29 +100,28 @@ void pcm_init()
 
 void pcm_final()
 {
-  // Disable playback per-sample interrupt.
+  /* Disable playback per-sample interrupt */
   TIMSK1 &= ~_BV(OCIE1A);
-  
-  // Disable the per-sample timer completely.
+
+  /* Disable the per-sample timer completely */
   TCCR1B &= ~_BV(CS10);
-  
-  // Disable the PWM timer.
+
+  /* Disable the PWM timer */
   TCCR2B &= ~_BV(CS10);
-  
-  digitalWrite(speakerPin, LOW);
+
+  /* digitalWrite(11, LOW); */
+  /* Set the 3rd bit of PORTB to zero to make the voltage on pin 11 go low */
+  PORTB &= ~_BV(PB3);
 }
 
 void pcm_play(const unsigned char *data, int length)
 {
-  byte sregRestore = SREG;
+  unsigned char sregRestore = SREG;
 
-  // Temporarily turn off interrups while writing to global variables used in ISR
-  cli(); // clear the global interrupt enable flag
+  /* Temporarily turn off interrups while writing to global variables used in ISR */
+  cli(); /* Clear the global interrupt enable flag */
   sounddata_data = data;
   sounddata_length = length;
   sample = 0;
-  SREG = sregRestore; // restore the status register to its previous value
-
-  // Wait for the amount of time it takes to play sound, times 8/7 to be safe
-  delay(length / 7); // Try delay(length / 8) if you feel bold
+  SREG = sregRestore; /* Restore the status register to its previous value */
 }
