@@ -33,6 +33,7 @@
 
 #include <stdint.h>
 #include <avr/interrupt.h>
+/* #include <util/atomic.h> */
 #include <avr/io.h>
 #include <avr/pgmspace.h>
 #include <util/delay.h>
@@ -42,13 +43,12 @@
 
 unsigned char const *sounddata_data = 0;
 int sounddata_length = 0;
-volatile uint16_t sample; /* Operations on 2-byte variable are not atomic, so volatile might not suffice */
+volatile uint16_t sample;
 
 /* This is called at 8000 Hz to load the next sample */
 ISR(TIMER1_COMPA_vect)
 {
-  if (sample < sounddata_length)
-  OCR2A = pgm_read_byte(&sounddata_data[sample++]);
+  if (sample < sounddata_length) OCR2A = pgm_read_byte(&sounddata_data[sample++]);
 }
 
 void pcm_init()
@@ -114,14 +114,25 @@ void pcm_final()
   PORTB &= ~_BV(PB3);
 }
 
-void pcm_play(const unsigned char *data, int length)
+void pcm_play(const unsigned char *data, int nsamples)
 {
+  unsigned short n, nquarterseconds;
   unsigned char sregRestore = SREG;
 
   /* Temporarily turn off interrups while writing to global variables used in ISR */
+  /* ATOMIC_BLOCK(ATOMIC_RESTORESTATE) */
   cli(); /* Clear the global interrupt enable flag */
-  sounddata_data = data;
-  sounddata_length = length;
-  sample = 0;
+  {
+    sounddata_data = data;
+    sounddata_length = nsamples;
+    sample = 0;
+  }
   SREG = sregRestore; /* Restore the status register to its previous value */
+
+  /* The sound is now playing asynchronously. Don't return until it's done! */
+
+  /* Hint: nsamples >> 3 = nsamples / 8 = duration of sound in ms */
+  nquarterseconds = nsamples >> 11;
+  nquarterseconds++; /* Add one to have some margin */
+  for (n = 0; n <= nquarterseconds; n++) _delay_ms(256);
 }

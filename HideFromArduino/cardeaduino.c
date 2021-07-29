@@ -35,15 +35,13 @@ int main()
   while (1)
   {
     /* pcm_play(sine1kHz_data, 8000); */
-    /* pcm_play(duemilanove_data, duemilanove_length);
-    _delay_ms(duemilanove_length / 7); */
+    /* pcm_play(duemilanove_data, duemilanove_length); */
+
     random_delay(); /* Random wait to build suspense */
     pcm_play(shotgun_data, shotgun_length);
-    /* Wait for the amount of time it takes to play the sound, times 8/7 to be safe */
-    _delay_ms(shotgun_length / 7); /* Remember, there's 8 samples per millisecond */
+
     random_delay();
     pcm_play(dog_data, dog_length);
-    _delay_ms(dog_length / 7);
 
     if (3 == ++nloop) pcm_final();
   }

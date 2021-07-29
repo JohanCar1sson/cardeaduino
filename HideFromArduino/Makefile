@@ -9,7 +9,7 @@ cardeaduino.hex : cardeaduino
 # Using avr-gcc to invoke the linker seems broken for gcc 11.1.0
 # Here's an ugly workaround:
 #cardeaduino : cardeaduino.o crtatmega328p.o
-#	avr-gcc -mmcu=atmega328p cardeaduino.o -L/home/johan/local/avr/avr-libc-2.0.0/avr/lib -L/home/johan/local/avr/avr-libc-2.0.0/avr/lib/avr5 -o cardeaduino
+#	avr-gcc –std=c99 -mmcu=atmega328p cardeaduino.o -L/home/johan/local/avr/avr-libc-2.0.0/avr/lib -L/home/johan/local/avr/avr-libc-2.0.0/avr/lib/avr5 -o cardeaduino
 #crtatmega328p.o :
 #	ln -s /home/johan/local/avr/avr-libc-2.0.0/avr/lib/avr5/crtatmega328p.o .
 # But it's probably better to link using collect2 directly:
