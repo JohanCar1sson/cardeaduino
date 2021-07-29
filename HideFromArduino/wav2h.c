@@ -37,7 +37,7 @@ typedef struct
 {
 	int sampleRate;
 	int numChannels;
-	int bitsPerSample;
+	int bitDepth;
 	int dataLength;
 } wavSound;
 
@@ -55,7 +55,7 @@ wavSound * loadWaveHeader(FILE * fp)
 	int sampleRate;
 	int byteRate;
 	short int blockAlign;
-	short int bitsPerSample;
+	short int bitDepth;
 	wavSound *w;
 
 	c[4] = 0;
@@ -141,7 +141,7 @@ wavSound * loadWaveHeader(FILE * fp)
 	nbRead=fread(&blockAlign, sizeof(short int), 1, fp);
 	if (nbRead < 1) return NULL;
 
-	nbRead=fread(&bitsPerSample, sizeof(short int), 1, fp);
+	nbRead=fread(&bitDepth, sizeof(short int), 1, fp);
 	if (nbRead < 1) return NULL;
 	
 	nbRead=fread(c, sizeof(char), 4, fp);
@@ -169,7 +169,7 @@ wavSound * loadWaveHeader(FILE * fp)
 	}
 	w->sampleRate = 8000 /* sampleRate */;
 	w->numChannels = 1 /* nbChannels */;
-	w->bitsPerSample = bitsPerSample;
+	w->bitDepth = bitDepth;
 	w->dataLength = subChunk2Size;
 
 	return w;
@@ -187,15 +187,18 @@ void saveWave(FILE * fpI, wavSound *s, FILE * fpO, char * name)
 	
 	/* Print general information) */
 	fprintf(fpO, "/* %s sound made by wav2h */\n\n", name);
-	fprintf(fpO, "const int %s_sampleRate=%d;\n", name, s->sampleRate);
+	fprintf(fpO, "const unsigned int %s_sampleRate = %d;\n", name, s->sampleRate);
+	fprintf(fpO, "const unsigned char %s_bitDepth = %d;\n", name, s->bitDepth);
 
-	realLength = (s->dataLength / s->numChannels / s->bitsPerSample * 8);
+	realLength = (s->dataLength / s->numChannels / s->bitDepth * 8);
 
-	fprintf(fpO, "const int %s_length=%d;\n\n", name, realLength);
+    /* On an 8-bit uC, an int might be just two bytes.
+       Use an unsigned long to allow audio clips longer than eight seconds to work. */
+	fprintf(fpO, "const unsigned long %s_length = %d;\n\n", name, realLength);
 
 	/* 8-bit ? */
 	fprintf(fpO, "const unsigned char %s_data[] PROGMEM = {\n", name);
-	if (s->bitsPerSample == 8)
+	if (s->bitDepth == 8)
 	{
 		for (i = 0 ; i < realLength ; i++)
 		{
