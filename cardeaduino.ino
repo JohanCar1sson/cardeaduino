@@ -7,7 +7,8 @@
 #include "PCM.h"
 
 //#include "sine1kHz.h"
-#include "duemilanove.h"
+//#include "duemilanove.h"
+#include "lovecake.h"
 //#include "shotgun.h"
 //#include "dog.h"
 
@@ -21,7 +22,8 @@ void setup()
 void loop()
 {
   //pcm_play(sine1kHz_data, 8000);
-  pcm_play(duemilanove_data, duemilanove_length);
+  //pcm_play(duemilanove_data, duemilanove_length);
+  pcm_play(lovecake_data, lovecake_length);
   //pcm_play(shotgun_data, shotgun_length);
   //pcm_play(dog_data, dog_length);
 
