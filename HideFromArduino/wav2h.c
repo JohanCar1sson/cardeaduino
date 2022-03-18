@@ -105,7 +105,7 @@ wavSound * loadWaveHeader(FILE * fp)
 	/* is it a PCM ? */
 	if (subChunk1Size != 16)
 	{
-		printf("Not PCM fmt chunk size: %x\n", subChunk1Size);
+		printf("Not PCM fmt chunk size: %d\n", subChunk1Size);
 		return NULL;
 	}
 	nbRead=fread(&audFormat, sizeof(short int), 1, fp);
@@ -114,7 +114,7 @@ wavSound * loadWaveHeader(FILE * fp)
 	/* is it PCM ? */
 	if (audFormat != 1)
 	{
-		printf("No PCM format (1): %x\n", audFormat);
+		printf("No PCM format (1): %dh\n", audFormat);
 		return NULL;
 	}
 	nbRead=fread(&nbChannels, sizeof(short int), 1, fp);
@@ -123,7 +123,7 @@ wavSound * loadWaveHeader(FILE * fp)
 	/* is it mono ? */
 	if (nbChannels != 1)
 	{
-		printf("Number of channels invalid: %x (must be mono)\n", nbChannels);
+		printf("Number of channels invalid: %dh (must be mono)\n", nbChannels);
 		return NULL;
 	}
 	nbRead=fread(&sampleRate, sizeof(int), 1, fp);
@@ -132,7 +132,7 @@ wavSound * loadWaveHeader(FILE * fp)
 	/* is the sample rate 8 kHz ? */
 	if (sampleRate != 8000)
 	{
-		printf("The sample rate is invalid: %x (must be 8 kHz)\n", sampleRate);
+		printf("The sample rate is invalid: %d (must be 8 kHz)\n", sampleRate);
 		return NULL;
 	}
 	nbRead=fread(&byteRate, sizeof(int), 1, fp);
@@ -143,7 +143,13 @@ wavSound * loadWaveHeader(FILE * fp)
 
 	nbRead=fread(&bitDepth, sizeof(short int), 1, fp);
 	if (nbRead < 1) return NULL;
-	
+
+	/* is the bit depth 8 bits? */
+	if (bitDepth != 8)
+	{
+		printf("The bit depth is invalid: %dh (must be 8 bits)\n", bitDepth);
+		return NULL;
+	}
 	nbRead=fread(c, sizeof(char), 4, fp);
 	
 	/* EOF ? */
@@ -167,25 +173,28 @@ wavSound * loadWaveHeader(FILE * fp)
 		printf("Out of memory, sorry\n");	
 		return w;
 	}
-	w->sampleRate = 8000 /* sampleRate */;
-	w->numChannels = 1 /* nbChannels */;
-	w->bitDepth = bitDepth;
+	w->sampleRate = 8000;
+	w->numChannels = 1;
+	w->bitDepth = 8;
 	w->dataLength = subChunk2Size;
 
 	return w;
 }
 
-/* Loads the actual wave data into the data structure. */
+/* Loads the actual wave data into the data structure */
 void saveWave(FILE * fpI, wavSound *s, FILE * fpO, char * name)
 {
 	long filepos;
-	int i;
-	int realLength;
-	unsigned char stuff8;
+	int i, j;
+	int realLength, numchars;
+	unsigned char stuff8, databyte, crushfactor = 1, nb, nb8;
+
+	/* nb = number of bits used for each audio sample */
+	nb = 8 / crushfactor; nb8 = 8 - nb;
 
 	filepos = ftell(fpI);
 	
-	/* Print general information) */
+	/* Print general information */
 	fprintf(fpO, "/* %s sound made by wav2h */\n\n", name);
 	fprintf(fpO, "const unsigned int %s_sampleRate = %d;\n", name, s->sampleRate);
 	fprintf(fpO, "const unsigned char %s_bitDepth = %d;\n", name, s->bitDepth);
@@ -193,35 +202,28 @@ void saveWave(FILE * fpI, wavSound *s, FILE * fpO, char * name)
 	realLength = (s->dataLength / s->numChannels / s->bitDepth * 8);
 
     /* On an 8-bit uC, an int might be just two bytes.
-       Use an unsigned long to allow audio clips longer than eight seconds to work. */
+       Use an unsigned long to allow audio clips longer than eight seconds (at 8-bit depth) to work. */
 	fprintf(fpO, "const unsigned long %s_length = %d;\n\n", name, realLength);
 
-	/* 8-bit ? */
 	fprintf(fpO, "const unsigned char %s_data[] PROGMEM = {\n", name);
-	if (s->bitDepth == 8)
+
+	numchars = (realLength + crushfactor - 1) / crushfactor; /* Round up */
+	for (i = 0; i < numchars; i++)
 	{
-		for (i = 0 ; i < realLength ; i++)
+		for (j = 0; j < crushfactor; j++)
 		{
-			fread(&stuff8, sizeof(unsigned char), 1, fpI);
-			fprintf(fpO, "%3d%s", stuff8, (i < realLength - 1) ? ", " : "");
-			if (i < realLength - 1 && (i + 1) % 16 == 0) fprintf(fpO, "\n");
+			stuff8 = 127; /* a.k.a. silence */
+			if (i * crushfactor + j < realLength)
+				fread(&stuff8, sizeof(unsigned char), 1, fpI);
+			databyte = stuff8;
+			/* Do bit crushing here */
+			databyte >>= nb;
+			databyte += (stuff8 >> nb8) << nb8;
 		}
-		fprintf(fpO, "};\n");
-	/* 16-bit ? convert signed 16 to unsigned 8 */
+		fprintf(fpO, "%3d%s", databyte, (i < realLength - 1) ? ", " : "");
+		if (i < realLength - 1 && (i + 1) % 16 == 0) fprintf(fpO, "\n");
 	}
-	else
-	{
-		for (i = 0 ; i < realLength ; i++)
-		{
-		    /* We take only MSB of wave data... */
-		    /* Will this work on little-endian computers only? Johan 7/15/21 */
-			fread(&stuff8, sizeof(char), 1, fpI);
-			fread(&stuff8, sizeof(char), 1, fpI);
-			fprintf(fpO, "%4d%s", 128 + (signed char)stuff8, (i < realLength - 1) ? ", " : "");
-			if ((i % 12) == 0) fprintf(fpO, "\n");
-		}
-		fprintf(fpO, "};\n");
-	}
+	fprintf(fpO, "};\n");
 }
 
 int main(int argc, char *argv[])

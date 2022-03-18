@@ -37,7 +37,7 @@ extern "C" {
 
 void pcm_init();
 void pcm_final();
-void pcm_play(unsigned char const *data, int length);
+void pcm_play(unsigned char const *data, int length, unsigned char bits);
 
 #ifdef __cplusplus
 }

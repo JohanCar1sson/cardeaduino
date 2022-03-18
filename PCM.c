@@ -41,14 +41,30 @@
 #define SAMPLE_RATE 8000
 /* #define _BV(bit) (1 << (bit)) */
 
-unsigned char const *sounddata_data = 0;
-int sounddata_length = 0;
+unsigned char const *audio_data = 0;
+int audio_length = 0;
+unsigned char audio_bitdepth = 8;
 volatile uint16_t sample;
 
 /* This is called at 8000 Hz to load the next sample */
 ISR(TIMER1_COMPA_vect)
 {
-  if (sample < sounddata_length) OCR2A = pgm_read_byte(&sounddata_data[sample++]);
+  static unsigned char databyte;
+
+  if (sample < audio_length) 
+  {
+    switch (audio_bitdepth)
+    {
+      case 4:
+        databyte = audio_data[sample / 2] >> 4 * (sample % 2);
+        databyte <<= 4;
+        break;
+      case 8:
+        databyte = audio_data[sample];
+    }
+    OCR2A = pgm_read_byte(&databyte);
+    sample++;
+  }
 }
 
 void pcm_init()
@@ -114,17 +130,18 @@ void pcm_final()
   PORTB &= ~_BV(PB3);
 }
 
-void pcm_play(const unsigned char *data, int nsamples)
+void pcm_play(const unsigned char *data, int nsamples, unsigned char nbitdepth)
 {
   unsigned short n, nquarterseconds;
   unsigned char sregRestore = SREG;
 
-  /* Temporarily turn off interrups while writing to global variables used in ISR */
+  /* Temporarily turn off interrupts while writing to global variables used in ISR */
   /* ATOMIC_BLOCK(ATOMIC_RESTORESTATE) */
   cli(); /* Clear the global interrupt enable flag */
   {
-    sounddata_data = data;
-    sounddata_length = nsamples;
+    audio_data = data;
+    audio_length = nsamples;
+    audio_bitdepth = nbitdepth;
     sample = 0;
   }
   SREG = sregRestore; /* Restore the status register to its previous value */

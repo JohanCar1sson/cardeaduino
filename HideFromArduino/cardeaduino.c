@@ -9,10 +9,10 @@
 
 #include "PCM.h"
 
-/* #include "../sine1kHz.h" */
+#include "../sine1kHz.h"
 /* #include "../duemilanove.h" */
-#include "../shotgun.h"
-#include "../dog.h"
+/* #include "../shotgun.h" */
+/* #include "../dog.h" */
 
 void random_delay()
 {
@@ -34,15 +34,15 @@ int main()
 
   while (1)
   {
-    /* pcm_play(sine1kHz_data, 8000); */
-    /* pcm_play(duemilanove_data, duemilanove_length); */
-
+    pcm_play(sine1kHz_data, 8000, 8);
+    /* pcm_play(duemilanove_data, duemilanove_length, 8); */
+#if 0
     random_delay(); /* Random wait to build suspense */
-    pcm_play(shotgun_data, shotgun_length);
+    pcm_play(shotgun_data, shotgun_length, 8);
 
     random_delay();
-    pcm_play(dog_data, dog_length);
-
+    pcm_play(dog_data, dog_length, 8);
+#endif
     if (3 == ++nloop) pcm_final();
   }
 }
