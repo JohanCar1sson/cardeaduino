@@ -41,7 +41,7 @@
 #define SAMPLE_RATE 8000
 /* #define _BV(bit) (1 << (bit)) */
 
-unsigned char const *audio_data = 0;
+const unsigned char *audio_data = 0;
 int audio_length = 0;
 unsigned char audio_bitdepth = 8;
 volatile uint16_t sample;
@@ -56,13 +56,13 @@ ISR(TIMER1_COMPA_vect)
     switch (audio_bitdepth)
     {
       case 4:
-        databyte = audio_data[sample / 2] >> 4 * (sample % 2);
+        databyte = pgm_read_byte(audio_data + (sample >> 1)) >> 4 * (sample % 2);
         databyte <<= 4;
         break;
       case 8:
-        databyte = audio_data[sample];
+        databyte = pgm_read_byte(audio_data + sample);
     }
-    OCR2A = pgm_read_byte(&databyte);
+    OCR2A = databyte;
     sample++;
   }
 }
