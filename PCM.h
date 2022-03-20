@@ -1,6 +1,10 @@
 /* A version of the PCM library [1] that was modified by Johan Carlsson
  * (@JohanCar1sson) to allow playing multiple sounds, or the same sound multiple
- * times. The changes where trivial, so no copyright is claimed.
+ * times. Support for bit-crushed audio has also been added (with bit depth
+ * reduced to 4, 2 or 1).
+ *
+ * Copyright 2022 Johan Carlsson
+ *
  * [1] https://github.com/damellis/PCM
  */
 
