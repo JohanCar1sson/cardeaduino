@@ -188,7 +188,7 @@ void saveWave(FILE * fpI, wavSound *s, FILE * fpO, char * name)
 	long filepos;
 	int i, j;
 	int realLength, numchars;
-	unsigned char stuff8, databyte, crushfactor = 1, nb, nb8;
+	unsigned char stuff8, databyte, crushfactor = 8 / s->bitDepth, nb, nb8;
 
 	/* nb = number of bits used for each audio sample */
 	nb = 8 / crushfactor; nb8 = 8 - nb;
@@ -200,7 +200,8 @@ void saveWave(FILE * fpI, wavSound *s, FILE * fpO, char * name)
 	fprintf(fpO, "const unsigned int %s_sampleRate = %d;\n", name, s->sampleRate);
 	fprintf(fpO, "const unsigned char %s_bitDepth = %d;\n", name, s->bitDepth);
 
-	realLength = (s->dataLength / s->numChannels / s->bitDepth * 8);
+	/* realLength = (s->dataLength / s->numChannels / s->bitDepth * 8); */
+	realLength = s->dataLength;
 
     /* On an 8-bit uC, an int might be just two bytes.
        Use an unsigned long to allow audio clips longer than eight seconds (at 8-bit depth) to work. */
@@ -209,6 +210,7 @@ void saveWave(FILE * fpI, wavSound *s, FILE * fpO, char * name)
 	fprintf(fpO, "const unsigned char %s_data[] PROGMEM = {\n", name);
 
 	numchars = (realLength + crushfactor - 1) / crushfactor; /* Round up */
+	printf("realLength = %d, numchars = %d, crushfactor = %d\n", realLength, numchars, crushfactor);
 	for (i = 0; i < numchars; i++)
 	{
 		for (j = 0; j < crushfactor; j++)
@@ -221,8 +223,8 @@ void saveWave(FILE * fpI, wavSound *s, FILE * fpO, char * name)
 			databyte >>= nb;
 			databyte += (stuff8 >> nb8) << nb8;
 		}
-		fprintf(fpO, "%3d%s", databyte, (i < realLength - 1) ? ", " : "");
-		if (i < realLength - 1 && (i + 1) % 16 == 0) fprintf(fpO, "\n");
+		fprintf(fpO, "%3d%s", databyte, (i < numchars - 1) ? ", " : "");
+		if (i < numchars - 1 && (i + 1) % 16 == 0) fprintf(fpO, "\n");
 	}
 	fprintf(fpO, "};\n");
 }
