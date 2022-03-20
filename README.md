@@ -1,6 +1,6 @@
 # cardeaduino
 
-Microcontroller that makes discouraging sounds when a doorknob is touched (like racking the slide on a shotgun, or a dog growling). The original PCM library [1] only allowed playing a single sound once. My modified version that removes this restriction is in this repo.
+Microcontroller that makes discouraging sounds when a doorknob is touched (like racking the slide on a shotgun, or a dog growling). The original PCM library [1] only allowed playing a single sound once. My modified version that removes this restriction is in this repo. I've also added support for playback of bit-crushed audio (with bit depth reduced to 4, 2 or 1).
 
 I'll use an Arduino Uno for the first iteration, because the PCM library is currently AVR only.
 
