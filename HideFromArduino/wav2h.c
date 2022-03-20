@@ -1,10 +1,11 @@
 /* wav2h: converts mono (single channel), 8 kHz sample rate WAV file into a
- * data array in a header file that can be used by the Arduino PCM library.
+ * data array in a header file that can be used by my version of the Arduino
+ * PCM library.
  *
  * SoX can be used to produce the input audio file, for example:
  * sox Growling.mp3 -c 1 -r 8k -b 8 -e unsigned-integer dog.wav speed 0.9 norm
  *
- * Author: Johan Carlsson (who claims no copyright on his trivial changes)
+ * Copyright 2022 Johan Carlsson
  */
 
 /* wave2c, a WAV file to GBA C source converter.
@@ -231,12 +232,12 @@ int main(int argc, char *argv[])
 	wavSound *s;
 	FILE *fin;
 	FILE *fout;
-	int namelen, idot;
+	int namelen, idot,bd;
 	char *name;
 
-	if (argc != 2)
+	if (argc != 3)
 	{
-		printf("Usage: ./%s <file.wav>\n", argv[0]);
+		printf("Usage: ./%s <file.wav> <bit depth>\n", argv[0]);
 		exit(0);
 	}
     namelen = strlen(argv[1]);
@@ -258,6 +259,14 @@ int main(int argc, char *argv[])
 		printf("The input file %s does not have the correct format\n", argv[1]);
 		exit(0);
 	}
+	bd = atoi(argv[2]);
+	if (!(bd == 8 || bd == 4 || bd == 2 || bd == 1))
+	{
+		printf("%s is not an acceptable bit depth (must be 8, 4, 2 or 1)\n", argv[2]);
+		exit(0);
+	}
+	s->bitDepth = bd;
+
     strcat(name, ".h");
     /* printf("->%s<-\n", name); exit(0); */
 	fout = fopen(name, "w");
