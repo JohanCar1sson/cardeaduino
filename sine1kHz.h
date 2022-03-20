@@ -1,7 +1,8 @@
 /* sine1kHz sound made by wav2h */
 
-const int sine1kHz_sampleRate=8000;
-const int sine1kHz_length=8000;
+const unsigned int sine1kHz_sampleRate = 8000;
+const unsigned char sine1kHz_bitDepth = 8;
+const unsigned long sine1kHz_length = 8000;
 
 const unsigned char sine1kHz_data[] PROGMEM = {
 135, 190, 218, 191, 128,  65,  39,  65, 128, 191, 218, 191, 128,  64,  39,  64, 

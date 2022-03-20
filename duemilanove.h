@@ -1,6 +1,7 @@
 /* duemilanove sound made by wav2h */
 
 const int duemilanove_sampleRate=8000;
+const unsigned char duemilanove_bitDepth = 8;
 const int duemilanove_length=18998;
 
 const unsigned char duemilanove_data[] PROGMEM = { 126, 127, 128, 128, 128, 128, 

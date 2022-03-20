@@ -1,7 +1,8 @@
 /* dog sound made by wav2h */
 
-const int dog_sampleRate=8000;
-const int dog_length=22088;
+const unsigned int dog_sampleRate = 8000;
+const unsigned char dog_bitDepth = 8;
+const unsigned long dog_length = 22088;
 
 const unsigned char dog_data[] PROGMEM = {
 128, 128, 128, 129, 128, 128, 129, 128, 128, 128, 129, 128, 128, 128, 128, 129, 

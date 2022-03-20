@@ -1,7 +1,8 @@
 /* shotgun sound made by wav2h */
 
-const int shotgun_sampleRate=8000;
-const int shotgun_length=6960;
+const unsigned int shotgun_sampleRate = 8000;
+const unsigned char shotgun_bitDepth = 8;
+const unsigned long shotgun_length = 6960;
 
 const unsigned char shotgun_data[] PROGMEM = {
 127, 128, 128, 128, 129, 127, 127, 129, 129, 128, 127, 128, 128, 128, 129, 128, 

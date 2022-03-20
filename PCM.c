@@ -42,7 +42,7 @@
 /* #define _BV(bit) (1 << (bit)) */
 
 const unsigned char *audio_data = 0;
-int audio_length = 0;
+unsigned int audio_length = 0;
 unsigned char audio_bitdepth = 8;
 volatile uint16_t sample;
 
@@ -130,7 +130,7 @@ void pcm_final()
   PORTB &= ~_BV(PB3);
 }
 
-void pcm_play(const unsigned char *data, int nsamples, unsigned char nbitdepth)
+void pcm_play(const unsigned char *data, unsigned int nsamples, unsigned char nbitdepth)
 {
   unsigned short n, nquarterseconds;
   unsigned char sregRestore = SREG;

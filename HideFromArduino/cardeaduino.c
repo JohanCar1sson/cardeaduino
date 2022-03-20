@@ -1,5 +1,6 @@
 /* Microcontroller that makes discouraging sounds when a doorknob is touched
  * https://github.com/JohanCar1sson/cardeaduino
+ * Copyright 2021, 2022 Johan Carlsson
  */
 
 #include <stdlib.h>
@@ -34,7 +35,7 @@ int main()
 
   while (1)
   {
-    pcm_play(sine1kHz_data, 8000, 8);
+    pcm_play(sine1kHz_data, 8000, sine1kHz_bitDepth);
     /* pcm_play(duemilanove_data, duemilanove_length, 8); */
 #if 0
     random_delay(); /* Random wait to build suspense */
