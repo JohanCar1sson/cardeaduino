@@ -210,7 +210,7 @@ void saveWave(FILE * fpI, wavSound *s, FILE * fpO, char * name)
 	fprintf(fpO, "const unsigned char %s_data[] PROGMEM = {\n", name);
 
 	numchars = (realLength + crushfactor - 1) / crushfactor; /* Round up */
-	printf("realLength = %d, numchars = %d, crushfactor = %d\n", realLength, numchars, crushfactor);
+	/* printf("realLength = %d, numchars = %d, crushfactor = %d\n", realLength, numchars, crushfactor); */
 	for (i = 0; i < numchars; i++)
 	{
 		for (j = 0; j < crushfactor; j++)
@@ -239,7 +239,7 @@ int main(int argc, char *argv[])
 
 	if (argc != 3)
 	{
-		printf("Usage: ./%s <file.wav> <bit depth>\n", argv[0]);
+		printf("Usage: %s <file.wav> <bit depth>\n", argv[0]);
 		exit(0);
 	}
     namelen = strlen(argv[1]);
@@ -254,8 +254,11 @@ int main(int argc, char *argv[])
     }
     name[idot] = '\0';
     /* printf("->%s<-\n", name); exit(0); */
-	fin = fopen(argv[1], "r");
-
+	if (!(fin = fopen(argv[1], "r")))
+	{
+		printf("The input file %s cannot be opened\n", argv[1]);
+		exit(0);
+	}
 	if ((s = loadWaveHeader(fin)) == NULL)
 	{
 		printf("The input file %s does not have the correct format\n", argv[1]);
