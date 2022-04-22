@@ -183,7 +183,7 @@ wavSound * loadWaveHeader(FILE * fp)
 }
 
 /* Loads the actual wave data into the data structure */
-void saveWave(FILE * fpI, wavSound *s, FILE * fpO, char * name)
+void saveWave(FILE *fpI, wavSound *s, FILE *fpO, char *name)
 {
 	long filepos;
 	int i, j;
@@ -197,32 +197,35 @@ void saveWave(FILE * fpI, wavSound *s, FILE * fpO, char * name)
 	
 	/* Print general information */
 	fprintf(fpO, "/* %s sound made by wav2h */\n\n", name);
-	fprintf(fpO, "const unsigned int %s_sampleRate = %d;\n", name, s->sampleRate);
-	fprintf(fpO, "const unsigned char %s_bitDepth = %d;\n", name, s->bitDepth);
+	/* fprintf(fpO, "const unsigned int raudio_sampleRate = %d;\n", name, s->sampleRate); */
+	fprintf(fpO, "const unsigned char raudio_bitDepth = %d;\n", s->bitDepth);
 
 	/* realLength = (s->dataLength / s->numChannels / s->bitDepth * 8); */
 	realLength = s->dataLength;
 
     /* On an 8-bit uC, an int might be just two bytes.
        Use an unsigned long to allow audio clips longer than eight seconds (at 8-bit depth) to work. */
-	fprintf(fpO, "const unsigned long %s_length = %d;\n\n", name, realLength);
+	fprintf(fpO, "const unsigned long raudio_length = %d;\n\n", realLength);
 
-	fprintf(fpO, "const unsigned char %s_data[] PROGMEM = {\n", name);
+	fprintf(fpO, "const unsigned char raudio_data[] PROGMEM = {\n");
 
 	numchars = (realLength + crushfactor - 1) / crushfactor; /* Round up */
 	/* printf("realLength = %d, numchars = %d, crushfactor = %d\n", realLength, numchars, crushfactor); */
 	for (i = 0; i < numchars; i++)
 	{
+		databyte = 0;
 		for (j = 0; j < crushfactor; j++)
 		{
 			stuff8 = 127; /* a.k.a. silence */
 			if (i * crushfactor + j < realLength)
 				fread(&stuff8, sizeof(unsigned char), 1, fpI);
-			databyte = stuff8;
+			/* stuff8 = i * crushfactor + j;
+			printf("%d, %d, %hu\n", i, j, stuff8); */
 			/* Do bit crushing here */
 			databyte >>= nb;
 			databyte += (stuff8 >> nb8) << nb8;
 		}
+		/* databyte = 255; */
 		fprintf(fpO, "%3d%s", databyte, (i < numchars - 1) ? ", " : "");
 		if (i < numchars - 1 && (i + 1) % 16 == 0) fprintf(fpO, "\n");
 	}
@@ -278,6 +281,8 @@ int main(int argc, char *argv[])
 	name[idot] = '\0';
 
 	saveWave(fin, s, fout, name);
+	fclose(fin);
+	fclose(fout);
 
 	return 0;	
 }
