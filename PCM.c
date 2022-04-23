@@ -57,28 +57,26 @@ ISR(TIMER1_COMPA_vect)
 
   if (sample < audio_length) 
   {
-#if 0
-    databyte = pgm_read_byte(audio_data + (sample / audio_bitdepth)) >> (sample % (8 / audio_bitdepth));
-    databyte <<= (8 - audio_bitdepth);
-#else
     switch (audio_bitdepth)
     {
       case 1:
-        databyte = pgm_read_byte(audio_data + (sample >> 3)) >> (sample % 8);
+      	if (sample % 8 == 0) databyte = 0;
+        databyte += pgm_read_byte(audio_data + (sample >> 3)) >> (sample % 8);
         databyte <<= 7;
         break;
       case 2:
-        databyte = pgm_read_byte(audio_data + (sample >> 2)) >> 2 * (sample % 4);
+      	if (sample % 4 == 0) databyte = 0;
+        databyte += pgm_read_byte(audio_data + (sample >> 2)) >> 2 * (sample % 4);
         databyte <<= 6;
         break;
       case 4:
-        databyte = pgm_read_byte(audio_data + (sample >> 1)) >> 4 * (sample % 2);
+      	if (sample % 2 == 0) databyte = 0;
+        databyte += pgm_read_byte(audio_data + (sample >> 1)) >> 4 * (sample % 2);
         databyte <<= 4;
         break;
       case 8:
         databyte = pgm_read_byte(audio_data + sample);
     }
-#endif
     OCR2A = databyte;
     sample++;
   }
