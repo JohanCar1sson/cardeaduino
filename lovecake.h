@@ -1,10 +1,16 @@
 /* lovecake sound made by wav2h */
 
-const unsigned int lovecake_sampleRate = 8000;
-const unsigned char lovecake_bitDepth = 8;
-const unsigned long lovecake_length = 24448;
+#ifndef RAUDIO_PREFIX
+#define RAUDIO_PREFIX
+#endif
 
-const unsigned char lovecake_data[] PROGMEM = {
+#define KONK(a, b) KONK_(a, b)
+#define KONK_(a, b) a ## b
+
+const unsigned char KONK(RAUDIO_PREFIX, raudio_bitdepth) = 8;
+const unsigned long KONK(RAUDIO_PREFIX, raudio_length) = 24448;
+
+const unsigned char KONK(RAUDIO_PREFIX, raudio_data)[] PROGMEM = {
 128, 128, 128, 128, 128, 128, 128, 129, 128, 128, 128, 128, 128, 128, 128, 128, 
 129, 128, 128, 129, 128, 127, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 
 128, 128, 128, 128, 128, 128, 128, 128, 129, 128, 128, 129, 128, 128, 128, 128, 
@@ -1533,3 +1539,5 @@ const unsigned char lovecake_data[] PROGMEM = {
 110, 119, 118, 108, 115, 127, 130, 127, 118, 113, 117, 126, 131, 131, 132, 138, 
 141, 140, 139, 139, 133, 133, 136, 130, 126, 128, 126, 127, 132, 126, 122, 121, 
 121, 132, 137, 132, 131, 138, 145, 147, 142, 136, 138, 135, 131, 129, 129, 125};
+
+#undef RAUDIO_PREFIX

@@ -1,10 +1,16 @@
 /* duemilanove sound made by wav2h */
 
-const int duemilanove_sampleRate=8000;
-const unsigned char duemilanove_bitDepth = 8;
-const int duemilanove_length=18998;
+#ifndef RAUDIO_PREFIX
+#define RAUDIO_PREFIX
+#endif
 
-const unsigned char duemilanove_data[] PROGMEM = { 126, 127, 128, 128, 128, 128, 
+#define KONK(a, b) KONK_(a, b)
+#define KONK_(a, b) a ## b
+
+const unsigned char KONK(RAUDIO_PREFIX, raudio_bitdepth) = 8;
+const unsigned long KONK(RAUDIO_PREFIX, raudio_length) = 18998;
+
+const unsigned char KONK(RAUDIO_PREFIX, raudio_data)[] PROGMEM = {126, 127, 128, 128, 128, 128, 
 128, 127, 128, 128, 128, 129, 129, 128, 127, 128, 128, 127, 126, 127, 128, 
 129, 128, 127, 126, 127, 128, 128, 126, 126, 127, 127, 127, 127, 127, 127, 
 126, 127, 129, 130, 129, 128, 126, 126, 126, 126, 127, 129, 130, 129, 127, 
@@ -1233,3 +1239,5 @@ const unsigned char duemilanove_data[] PROGMEM = { 126, 127, 128, 128, 128, 128,
 128, 128, 129, 128, 125, 124, 125, 123, 123, 125, 126, 126, 127, 129, 128, 
 127, 127, 128, 127, 127, 128, 127, 126, 127, 128, 128, 129, 130, 130, 129, 
 128, 127, 126, 126, 128, 127};
+
+#undef RAUDIO_PREFIX
