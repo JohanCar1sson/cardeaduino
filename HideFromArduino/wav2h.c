@@ -197,17 +197,18 @@ void saveWave(FILE *fpI, wavSound *s, FILE *fpO, char *name)
 	
 	/* Print general information */
 	fprintf(fpO, "/* %s sound made by wav2h */\n\n", name);
-	/* fprintf(fpO, "const unsigned int raudio_sampleRate = %d;\n", name, s->sampleRate); */
-	fprintf(fpO, "const unsigned char raudio_bitDepth = %d;\n", s->bitDepth);
+	fprintf(fpO, "#ifndef RAUDIO_PREFIX\n#define RAUDIO_PREFIX\n#endif\n\n");
+	fprintf(fpO, "#define KONK(a, b) KONK_(a, b)\n#define KONK_(a, b) a ## b\n\n");
+	fprintf(fpO, "const unsigned char KONK(RAUDIO_PREFIX, raudio_bitdepth) = %d;\n", s->bitDepth);
 
 	/* realLength = (s->dataLength / s->numChannels / s->bitDepth * 8); */
 	realLength = s->dataLength;
 
     /* On an 8-bit uC, an int might be just two bytes.
        Use an unsigned long to allow audio clips longer than eight seconds (at 8-bit depth) to work. */
-	fprintf(fpO, "const unsigned long raudio_length = %d;\n\n", realLength);
+	fprintf(fpO, "const unsigned long KONK(RAUDIO_PREFIX, raudio_length) = %d;\n\n", realLength);
 
-	fprintf(fpO, "const unsigned char raudio_data[] PROGMEM = {\n");
+	fprintf(fpO, "const unsigned char KONK(RAUDIO_PREFIX, raudio_data)[] PROGMEM = {\n");
 
 	numchars = (realLength + crushfactor - 1) / crushfactor; /* Round up */
 	/* printf("realLength = %d, numchars = %d, crushfactor = %d\n", realLength, numchars, crushfactor); */
@@ -229,7 +230,7 @@ void saveWave(FILE *fpI, wavSound *s, FILE *fpO, char *name)
 		fprintf(fpO, "%3d%s", databyte, (i < numchars - 1) ? ", " : "");
 		if (i < numchars - 1 && (i + 1) % 16 == 0) fprintf(fpO, "\n");
 	}
-	fprintf(fpO, "};\n");
+	fprintf(fpO, "};\n\n#undef RAUDIO_PREFIX\n");
 }
 
 int main(int argc, char *argv[])
