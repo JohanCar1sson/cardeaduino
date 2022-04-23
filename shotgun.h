@@ -1,10 +1,16 @@
 /* shotgun sound made by wav2h */
 
-const unsigned int shotgun_sampleRate = 8000;
-const unsigned char shotgun_bitDepth = 8;
-const unsigned long shotgun_length = 6960;
+#ifndef RAUDIO_PREFIX
+#define RAUDIO_PREFIX
+#endif
 
-const unsigned char shotgun_data[] PROGMEM = {
+#define KONK(a, b) KONK_(a, b)
+#define KONK_(a, b) a ## b
+
+const unsigned char KONK(RAUDIO_PREFIX, raudio_bitdepth) = 8;
+const unsigned long KONK(RAUDIO_PREFIX, raudio_length) = 6960;
+
+const unsigned char KONK(RAUDIO_PREFIX, raudio_data)[] PROGMEM = {
 127, 128, 128, 128, 129, 127, 127, 129, 129, 128, 127, 128, 128, 128, 129, 128, 
 128, 128, 127, 128, 128, 128, 129, 128, 128, 129, 128, 128, 128, 128, 128, 128, 
 127, 128, 129, 127, 127, 128, 129, 128, 128, 128, 128, 128, 128, 128, 128, 128, 
@@ -440,3 +446,5 @@ const unsigned char shotgun_data[] PROGMEM = {
 128, 127, 129, 129, 128, 129, 129, 128, 127, 127, 128, 128, 128, 129, 128, 128, 
 128, 128, 128, 126, 127, 128, 126, 128, 128, 127, 129, 129, 129, 128, 128, 128, 
 128, 128, 128, 128, 128, 129, 128, 128, 129, 128, 128, 127, 128, 128, 128, 129};
+
+#undef RAUDIO_PREFIX

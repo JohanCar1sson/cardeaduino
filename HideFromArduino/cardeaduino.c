@@ -10,10 +10,28 @@
 
 #include "PCM.h"
 
-#include "../sine1kHz.h"
-/* #include "../duemilanove.h" */
-/* #include "../shotgun.h" */
-/* #include "../dog.h" */
+#define TESTING 1
+
+#if TESTING
+
+/* Avoid name clashes when multiple raudio headers are included by prefixing */
+#define RAUDIO_PREFIX full_rez_
+#include "sine1kHz8b.h"
+#define RAUDIO_PREFIX half_rez_
+#include "sine1kHz4b.h"
+#define RAUDIO_PREFIX quarter_rez_
+#include "sine1kHz2b.h"
+#define RAUDIO_PREFIX eighth_rez_
+#include "sine1kHz1b.h"
+
+#else
+
+#include "../shotgun.h"
+/* Avoid name clashes when a second raudio header is included by prefixing */
+#define RAUDIO_PREFIX dog_
+#include "../dog.h"
+
+#endif
 
 void random_delay()
 {
@@ -35,14 +53,16 @@ int main()
 
   while (1)
   {
-    pcm_play(sine1kHz_data, 8000, sine1kHz_bitDepth);
-    /* pcm_play(duemilanove_data, duemilanove_length, 8); */
-#if 0
+#if TESTING
+    pcm_play(full_rez_raudio_data, full_rez_raudio_length, full_rez_raudio_bitdepth); /* 8-bit */
+    pcm_play(half_rez_raudio_data, half_rez_raudio_length, half_rez_raudio_bitdepth); /* 4-bit */
+    pcm_play(quarter_rez_raudio_data, quarter_rez_raudio_length, quarter_rez_raudio_bitdepth); /* 2-bit */
+    pcm_play(eighth_rez_raudio_data, eighth_rez_raudio_length, eighth_rez_raudio_bitdepth); /* 1-bit */
+#else
+    pcm_play(raudio_data, raudio_length, raudio_bitdepth); /* shotgun */
     random_delay(); /* Random wait to build suspense */
-    pcm_play(shotgun_data, shotgun_length, 8);
-
+    pcm_play(dog_raudio_data, dog_raudio_length, dog_raudio_bitdepth); /* dog */
     random_delay();
-    pcm_play(dog_data, dog_length, 8);
 #endif
     if (3 == ++nloop) pcm_final();
   }
